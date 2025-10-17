@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
@@ -65,5 +66,18 @@ public class GameManager : MonoBehaviour
         gameClearPanel.SetActive(true);
         player.gameObject.SetActive(false);
     }
+    public void RestartGame()
+    {
+        string currentScene = SceneManager.GetActiveScene().name;
 
+        SceneManager.LoadScene(currentScene);
+    }
+
+    public void QuitGame()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
+        Application.Quit();
+    }
 }
