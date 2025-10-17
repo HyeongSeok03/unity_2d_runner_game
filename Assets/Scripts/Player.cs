@@ -6,20 +6,18 @@ public class Player : MonoBehaviour
     [SerializeField] private float speed;
     [SerializeField] private float jumpSpeed;
     Vector2 inputVec;
-    WallCheck wc;
     Rigidbody2D rb;
     SpriteRenderer sr;
     Animator anim;
-    bool canDoubleJump = false;
-    bool isGround = false;
+    bool canDoubleJump;
 
     void Awake()
     {
-        wc = GetComponentInChildren<WallCheck>();
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
     }
+
     void FixedUpdate()
     {
         rb.linearVelocity = new Vector2(inputVec.x * speed, rb.linearVelocity.y);
@@ -29,46 +27,45 @@ public class Player : MonoBehaviour
     {
         inputVec = value.Get<Vector2>();
         sr.flipX = (inputVec.x != 0) ? inputVec.x < 0 : sr.flipX;
-        anim.SetBool("isWalking", inputVec.x != 0);
+        anim.SetBool("isRunning", inputVec.x != 0);
     }
 
     void OnJump(InputValue value)
     {
-        if (value.isPressed)
+        // 이후 점프 처리 로직
+        if (anim.GetBool("isGround"))
         {
-            if (isGround)
-            {
-                anim.SetTrigger("jump");
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpSpeed);
-            }
-            else if (wc.isWall)
-            {
-                rb.AddForce(new Vector2(-jumpSpeed, jumpSpeed), ForceMode2D.Impulse);
-            }
-            else if (canDoubleJump)
-            {
-                anim.SetTrigger("doubleJump");
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpSpeed);
-                canDoubleJump = false;
-            }
+            anim.SetBool("isJumping", true);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpSpeed);
+        }
+        else if (canDoubleJump)
+        {
+            canDoubleJump = false;
+            anim.SetTrigger("doubleJump");
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpSpeed);
         }
     }
-
-    private void OnCollisionEnter2D(Collision2D collision)
+    void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.collider.CompareTag("Terrain"))
+        if (collision.CompareTag("Terrain"))
         {
-            isGround = true;
             anim.SetBool("isGround", true);
+            anim.SetBool("isJumping", false);
             canDoubleJump = true;
         }
     }
-    private void OnCollisionExit2D(Collision2D collision)
+
+    void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.collider.CompareTag("Terrain"))
-        { 
-            isGround = false;
+        if (collision.CompareTag("Terrain"))
+        {
             anim.SetBool("isGround", false);
         }
     }
+
+    // idle   : 땅에 있고 안움직임
+    // 뛰기    : 땅에 있고 움직임
+    // 점프    : 땅에 있고 점프함
+    // 더블점프 : 땅에 없고 점프했고 더블점프 안했고 점프함
+    // 떨어지기 : 땅에 없고 점프 안함
 }
