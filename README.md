@@ -59,7 +59,7 @@ The following controls are currently implemented in the game:
 
 The source code is located in the following directory: `Assets/Scripts/`
 
-To run the game, download the build folder located in: `Assets/Build/`
+To run the game, download the `Build.7z` file.
 
 Then, execute the build file inside that folder to start the game.
 
